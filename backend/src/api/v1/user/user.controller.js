@@ -5,7 +5,6 @@ const User = require("./user.model");
 // @route get /api/$version/user/me
 // @access privet
 const getCurrentUser = async (req, res) => {
-  console.log(req.session.userId);
   if (!req.session.userId)
     return response.sendUnauthorized(res, "Not logged in");
 

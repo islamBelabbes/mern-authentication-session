@@ -11,7 +11,7 @@ const login = async (req, res) => {
     return req.session.destroy(function (err) {
       if (err) throw err;
       res.clearCookie(process.env.SESSION_NAME);
-      response.sendBadRequest(res);
+      response.sendBadRequest(res, "Already logged in");
     });
   }
 
@@ -44,7 +44,7 @@ const signUp = async (req, res) => {
     });
   }
 
-  const { email, password, phone } = req.body;
+  const { email, password, phone, isAdmin } = req.body;
 
   // validate
   await authValidation.signUpSchema.validate({ email, password, phone });
@@ -58,14 +58,18 @@ const signUp = async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, salt);
 
   // save
-  const newUser = new User({
+  newUserPayload = {
     email,
     password: hashedPassword,
     phone,
-  });
+  };
+  if (isAdmin) {
+    newUserPayload.roles = ["admin"];
+  }
+  const newUser = new User(newUserPayload);
   await newUser.save();
 
-  response.sendOk(res, "User created successfully");
+  response.sendCreated(res, "User created successfully");
 };
 
 // @desc logout a user
